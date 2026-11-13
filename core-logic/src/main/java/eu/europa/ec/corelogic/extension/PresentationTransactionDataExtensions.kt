@@ -32,6 +32,7 @@ import eu.europa.ec.eudi.wallet.transfer.openId4vp.transactionData.QesRequest
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.transactionData.SignatureRequest
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.transactionData.payloads
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
 import org.multipaz.presentment.TransactionData
 
 fun TransactionData<*>.toPresentationTransactionDataDomain(): PresentationTransactionDataDomain =
@@ -73,6 +74,9 @@ private fun Any.toTransactionPayloadDomain(displayName: String?): PresentationTr
             },
             transactionDataHashAlgorithms = transactionPayload.hashAlgorithms.orEmpty().toList(),
         )
+
+        is JsonObject -> plenipoMandateDomainOrNull(transactionPayload)
+            ?: PresentationTransactionDataDomain.Unavailable
 
         else -> PresentationTransactionDataDomain.Unavailable
     }

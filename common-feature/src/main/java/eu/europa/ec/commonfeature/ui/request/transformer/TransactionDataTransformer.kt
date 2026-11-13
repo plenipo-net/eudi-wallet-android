@@ -314,6 +314,11 @@ class TransactionDataTransformer(
                         }
                     }
 
+                    is PresentationTransactionDataDomain.PlenipoMandate -> addPlenipoMandate(
+                        itemId = transactionId,
+                        mandate = transaction,
+                    )
+
                     is PresentationTransactionDataDomain.Unavailable -> addField(
                         itemId = "$transactionId/unavailable",
                         labelRes = null,
@@ -323,6 +328,76 @@ class TransactionDataTransformer(
             }
         }
     }
+
+    /**
+     * Every field of a Plenipo mandate that limits the agent: the bank checks the hash of exactly
+     * these bytes, so nothing is left out. Amounts are in minor units of the currency.
+     */
+    private fun MutableList<ExpandableListItemUi>.addPlenipoMandate(
+        itemId: String,
+        mandate: PresentationTransactionDataDomain.PlenipoMandate,
+    ) {
+        addField(
+            itemId = "$itemId/type",
+            labelRes = R.string.request_transaction_type,
+            value = resourceProvider.getString(R.string.request_plenipo_mandate_type),
+        )
+        addField(itemId = "$itemId/purpose", labelRes = R.string.request_plenipo_purpose, value = mandate.purpose)
+        addFields(itemId = "$itemId/action", labelRes = R.string.request_plenipo_actions, values = mandate.actions)
+        if (mandate.counterparties.isEmpty()) {
+            addField(
+                itemId = "$itemId/counterparty-any",
+                labelRes = R.string.request_plenipo_counterparties,
+                value = resourceProvider.getString(R.string.request_plenipo_counterparties_any),
+            )
+        } else {
+            addFields(itemId = "$itemId/counterparty", labelRes = R.string.request_plenipo_counterparties, values = mandate.counterparties)
+        }
+        mandate.limits?.let { limits ->
+            addField(
+                itemId = "$itemId/limit-operation",
+                labelRes = R.string.request_plenipo_limit_per_operation,
+                value = limits.perOperation?.let { amount -> formatMinorUnits(amount, limits.currency) },
+            )
+            addField(
+                itemId = "$itemId/limit-total",
+                labelRes = R.string.request_plenipo_limit_total,
+                value = limits.total?.let { amount -> formatMinorUnits(amount, limits.currency) },
+            )
+        }
+        addField(itemId = "$itemId/nbf", labelRes = R.string.request_plenipo_valid_from, value = formatEpochSeconds(mandate.notBefore))
+        addField(itemId = "$itemId/exp", labelRes = R.string.request_plenipo_valid_until, value = formatEpochSeconds(mandate.expiresAt))
+        addField(
+            itemId = "$itemId/delegation",
+            labelRes = R.string.request_plenipo_delegation,
+            value = mandate.maxDelegationDepth?.let { depth ->
+                resourceProvider.getString(R.string.request_plenipo_delegation_depth, depth)
+            } ?: resourceProvider.getString(R.string.request_plenipo_delegation_none),
+        )
+        mandate.legalPrincipal?.let { principal ->
+            addField(itemId = "$itemId/principal", labelRes = R.string.request_plenipo_legal_person, value = principal.euid)
+            addField(itemId = "$itemId/principal-role", labelRes = R.string.request_plenipo_legal_role, value = principal.role)
+        }
+        addField(itemId = "$itemId/id", labelRes = R.string.request_plenipo_mandate_id, value = mandate.mandateId)
+        addFields(
+            itemId = "$itemId/hash-algorithm",
+            labelRes = R.string.request_transaction_data_hash_algorithm,
+            values = mandate.transactionDataHashAlgorithms,
+        )
+    }
+
+    private fun formatMinorUnits(amount: Long, currencyCode: String): String {
+        val digits = runCatching { java.util.Currency.getInstance(currencyCode).defaultFractionDigits }
+            .getOrDefault(2)
+            .coerceAtLeast(0)
+        val value = java.math.BigDecimal.valueOf(amount, digits)
+        return "${value.toPlainString()} $currencyCode"
+    }
+
+    private fun formatEpochSeconds(seconds: Long): String =
+        java.time.format.DateTimeFormatter.ofLocalizedDateTime(java.time.format.FormatStyle.MEDIUM)
+            .withZone(java.time.ZoneId.systemDefault())
+            .format(java.time.Instant.ofEpochSecond(seconds))
 
     private fun MutableList<ExpandableListItemUi>.addField(
         itemId: String,

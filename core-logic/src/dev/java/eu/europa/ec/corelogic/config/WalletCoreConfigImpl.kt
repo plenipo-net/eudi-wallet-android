@@ -40,6 +40,7 @@ import eu.europa.ec.eudi.wallet.registration.relyingparty.WrpRegistrationPolicy
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.Format
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.TransactionDataType
+import eu.europa.ec.corelogic.extension.PLENIPO_MANDATE_TRANSACTION_DATA
 import eu.europa.ec.eudi.wallet.trust.PkixRevocationPolicy
 import eu.europa.ec.eudi.wallet.trust.TrustPolicy
 import eu.europa.ec.resourceslogic.R
@@ -92,7 +93,8 @@ internal class WalletCoreConfigImpl(
                         )
                         withTransactionDataTypes(
                             TransactionDataType.QES_APPROVAL,
-                            TransactionDataType.QES
+                            TransactionDataType.QES,
+                            PLENIPO_MANDATE_TRANSACTION_DATA
                         )
                     }
 
@@ -160,7 +162,13 @@ internal class WalletCoreConfigImpl(
                         }
                     }
 
+                    // Plenipo build: relying parties are authenticated against the CA of the Plenipo
+                    // sandbox platform (https://platform.sandbox.plenipo.net/rp-ca.pem) instead of the
+                    // EU WRPAC list, which the sandbox is not on. Other verifiers are not trusted.
                     configureReaderAuthentication {
+                        trustedCertificates(
+                            resourceProvider.getX509CertificateFromRaw(R.raw.plenipo_sandbox_rp_ca)
+                        )
                         enforceIfPresent()
                     }
 
