@@ -42,8 +42,41 @@ sealed interface PresentationTransactionDataDomain {
         val transactionDataHashAlgorithms: List<String> = emptyList(),
     ) : PresentationTransactionDataDomain
 
+    /**
+     * A Plenipo mandate (`plenipo_mandate`): what an AI agent may do on the person's behalf. The
+     * verifier binds the exact bytes, so every field that limits the agent is shown; a mandate with a
+     * field this build does not know is mapped to [Unavailable] and the request is declined.
+     */
+    data class PlenipoMandate(
+        val mandateId: String,
+        val purpose: String?,
+        val actions: List<String>,
+        /** Empty when the mandate allows any counterparty. */
+        val counterparties: List<String>,
+        val limits: PlenipoLimitsDomain?,
+        /** Seconds since the epoch. */
+        val notBefore: Long,
+        val expiresAt: Long,
+        /** Null when the agent may not delegate. */
+        val maxDelegationDepth: Int?,
+        val legalPrincipal: PlenipoLegalPrincipalDomain?,
+        val transactionDataHashAlgorithms: List<String> = emptyList(),
+    ) : PresentationTransactionDataDomain
+
     data object Unavailable : PresentationTransactionDataDomain
 }
+
+/** Amounts in ISO 4217 minor units. */
+data class PlenipoLimitsDomain(
+    val currency: String,
+    val perOperation: Long?,
+    val total: Long?,
+)
+
+data class PlenipoLegalPrincipalDomain(
+    val euid: String,
+    val role: String?,
+)
 
 data class QesDocumentDigestDomain(
     val label: String?,

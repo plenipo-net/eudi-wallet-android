@@ -46,7 +46,7 @@ extensions.configure<LibraryExtension>("android") {
 
     defaultConfig {
         // App name
-        manifestPlaceholders["appName"] = "EUDI Wallet"
+        manifestPlaceholders["appName"] = "EUDI Wallet (Plenipo test)"
     }
 }
 

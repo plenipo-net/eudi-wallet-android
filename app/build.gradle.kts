@@ -40,7 +40,8 @@ android {
     }
 
     defaultConfig {
-        applicationId = "eu.europa.ec.euidi"
+        // Plenipo build: its own id, so it installs next to the EU reference app and is not mistaken for it.
+        applicationId = "net.plenipo.eudiwallet"
         versionCode = 1
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
