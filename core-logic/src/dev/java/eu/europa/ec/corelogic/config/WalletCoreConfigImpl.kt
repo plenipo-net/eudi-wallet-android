@@ -41,6 +41,7 @@ import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.Format
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.TransactionDataType
 import eu.europa.ec.corelogic.extension.PLENIPO_MANDATE_TRANSACTION_DATA
+import eu.europa.ec.eudi.iso18013.transfer.readerauth.RevocationPolicy
 import eu.europa.ec.eudi.wallet.trust.PkixRevocationPolicy
 import eu.europa.ec.eudi.wallet.trust.TrustPolicy
 import eu.europa.ec.resourceslogic.R
@@ -169,6 +170,9 @@ internal class WalletCoreConfigImpl(
                         trustedCertificates(
                             resourceProvider.getX509CertificateFromRaw(R.raw.plenipo_sandbox_rp_ca)
                         )
+                        // The sandbox CA publishes no CRL, so the default HardFail revocation check
+                        // could never conclude and every sandbox request was blocked as untrusted.
+                        revocationPolicy(RevocationPolicy.NoCheck)
                         enforceIfPresent()
                     }
 
