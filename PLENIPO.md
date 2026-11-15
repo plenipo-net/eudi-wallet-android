@@ -31,13 +31,20 @@ Locally: `./gradlew :app:assembleDevDebug` with JDK 17 and the Android SDK.
 
 ## Try it
 
-1. Install the APK on an Android emulator or phone and add a PID from the EU test issuer in SD-JWT VC
-   format (`urn:eudi:pid:1`). The sandbox accounts are Maria Rossi (1984-03-12) and Luca Bianchi
-   (1979-11-02): enter one of them as test identity data.
-2. In Claude or another MCP client, connect the Plenipo sandbox MCP server and ask the agent to request
-   a mandate; or open https://sandbox.plenipo.net and start a request from the platform.
-3. Open the request link (`openid4vp://` or `eudi-openid4vp://authorize?...`) on the device, or scan the
-   QR code on the request page, read the mandate and approve it.
-4. The agent's payments are then allowed or refused by the bank within the mandate.
+These steps passed end to end on 15 November 2026 with `plenipo-v0.1.2` on the Android emulator
+(plenipo-net/plenipo#44).
+
+1. Install `app-dev-debug.apk` from the latest `plenipo-v*` release on an Android emulator or phone (drag
+   it onto the emulator window). Uninstall an earlier build first from Settings › Apps: each CI build is
+   signed with a different debug key.
+2. Set the PIN, then Add document › under **issuer.eudiw.dev** › "PID Combined" › the country form ›
+   Maria Rossi, 1984-03-12, IT (the sandbox accounts are Maria Rossi and Luca Bianchi, 1979-11-02).
+   Avoid "PID Combined" under issuer-backend.eudiw.dev until a sandbox with plenipo-net/plenipo#55 is
+   deployed everywhere you test.
+3. Ask for a mandate: in Claude or another MCP client with the Plenipo sandbox MCP server, or from
+   https://sandbox.plenipo.net. Open `https://platform.sandbox.plenipo.net/requests/<id>` in the
+   device's browser and tap "Open in a wallet on this device", or scan the QR code on that page.
+4. Choose **"PID (SD-JWT VC)"**, read the mandate and approve it **within 10 minutes** of the request.
+5. The agent's payments are then allowed or refused by the bank within the mandate.
 
 Open points are tracked in https://github.com/plenipo-net/plenipo/issues/35.
