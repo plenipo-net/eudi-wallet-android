@@ -39,8 +39,7 @@ These steps passed end to end on 15 November 2026 with `plenipo-v0.1.2` on the A
    signed with a different debug key.
 2. Set the PIN, then Add document › under **issuer.eudiw.dev** › "PID Combined" › the country form ›
    Maria Rossi, 1984-03-12, IT (the sandbox accounts are Maria Rossi and Luca Bianchi, 1979-11-02).
-   Avoid "PID Combined" under issuer-backend.eudiw.dev until a sandbox with plenipo-net/plenipo#55 is
-   deployed everywhere you test.
+   "PID Combined" under issuer-backend.eudiw.dev has not been tried end to end yet.
 3. Ask for a mandate: in Claude or another MCP client with the Plenipo sandbox MCP server, or from
    https://sandbox.plenipo.net. Open `https://platform.sandbox.plenipo.net/requests/<id>` in the
    device's browser and tap "Open in a wallet on this device", or scan the QR code on that page.
