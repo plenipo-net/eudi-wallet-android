@@ -51,7 +51,8 @@ private fun JsonObject.toPlenipoMandate(): PresentationTransactionDataDomain.Ple
     require(keys.all { it in TRANSACTION_MEMBERS })
     val mandate = this["mandate"] as JsonObject
     require(mandate.keys.all { it in MANDATE_MEMBERS })
-    require(mandate.long("v") == 1L)
+    // The spec (docs/spec.md, section 2) defines v as the string "0.1".
+    require(mandate.string("v") == "0.1")
     val actions = mandate.strings("actions")
     require(actions.isNotEmpty())
     val limits = (mandate["limits"] as JsonObject?)?.let { l ->
