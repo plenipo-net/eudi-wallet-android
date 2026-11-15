@@ -33,7 +33,7 @@ class TestPlenipoMandateExtensions {
     ).jsonObject
 
     private val fullMandate = """{
-        "v":1,"id":"6f1c","agent":{"jwk":{"kty":"EC","crv":"P-256","x":"a","y":"b"}},
+        "v":"0.1","id":"6f1c","agent":{"jwk":{"kty":"EC","crv":"P-256","x":"a","y":"b"}},
         "actions":["payments.transfer","accounts.read"],"counterparties":["lumen-energia.example"],
         "limits":{"currency":"EUR","per_operation":15000,"total":40000},
         "nbf":1763000000,"exp":1765592000,"delegation":{"max_depth":1},
@@ -63,7 +63,7 @@ class TestPlenipoMandateExtensions {
     @Test
     fun `a mandate without counterparties, limits or delegation allows any counterparty and no delegation`() {
         val mapped = plenipoMandateDomainOrNull(
-            payload("""{"v":1,"id":"x","agent":{"jwk":{}},"actions":["*"],"nbf":1,"exp":2}""")
+            payload("""{"v":"0.1","id":"x","agent":{"jwk":{}},"actions":["*"],"nbf":1,"exp":2}""")
         ) as PresentationTransactionDataDomain.PlenipoMandate
         assertEquals(emptyList<String>(), mapped.counterparties)
         assertNull(mapped.limits)
@@ -79,7 +79,7 @@ class TestPlenipoMandateExtensions {
     @Test
     fun `an unknown member, a wrong type or a broken value is declined`() {
         val unavailable = PresentationTransactionDataDomain.Unavailable
-        val base = """"v":1,"id":"x","agent":{"jwk":{}},"actions":["a"],"nbf":1,"exp":2"""
+        val base = """"v":"0.1","id":"x","agent":{"jwk":{}},"actions":["a"],"nbf":1,"exp":2"""
         // A member this build cannot show could restrict or widen the mandate without the person seeing it.
         assertEquals(unavailable, plenipoMandateDomainOrNull(payload("{$base,\"scope_extra\":true}")))
         assertEquals(unavailable, plenipoMandateDomainOrNull(payload("{$base}", extra = ""","note":"x"""")))
@@ -87,9 +87,11 @@ class TestPlenipoMandateExtensions {
         assertEquals(unavailable, plenipoMandateDomainOrNull(payload("{$base,\"limits\":{\"currency\":\"EUR\",\"total\":\"5\"}}")))
         assertEquals(unavailable, plenipoMandateDomainOrNull(payload("{$base,\"limits\":{\"currency\":\"EUR\",\"total\":-5}}")))
         assertEquals(unavailable, plenipoMandateDomainOrNull(payload("{$base,\"counterparties\":[]}")))
-        assertEquals(unavailable, plenipoMandateDomainOrNull(payload("""{"v":2,"id":"x","agent":{},"actions":["a"],"nbf":1,"exp":2}""")))
-        assertEquals(unavailable, plenipoMandateDomainOrNull(payload("""{"v":1,"id":"x","agent":{},"actions":[],"nbf":1,"exp":2}""")))
-        assertEquals(unavailable, plenipoMandateDomainOrNull(payload("""{"v":1,"id":"x","agent":{},"actions":["a"],"nbf":5,"exp":2}""")))
-        assertEquals(unavailable, plenipoMandateDomainOrNull(payload("""{"v":1,"id":"x","agent":{},"actions":["a"],"nbf":1.5,"exp":2}""")))
+        assertEquals(unavailable, plenipoMandateDomainOrNull(payload("""{"v":"0.2","id":"x","agent":{},"actions":["a"],"nbf":1,"exp":2}""")))
+        // A numeric version is not the 0.1 format, whatever its value.
+        assertEquals(unavailable, plenipoMandateDomainOrNull(payload("""{"v":1,"id":"x","agent":{},"actions":["a"],"nbf":1,"exp":2}""")))
+        assertEquals(unavailable, plenipoMandateDomainOrNull(payload("""{"v":"0.1","id":"x","agent":{},"actions":[],"nbf":1,"exp":2}""")))
+        assertEquals(unavailable, plenipoMandateDomainOrNull(payload("""{"v":"0.1","id":"x","agent":{},"actions":["a"],"nbf":5,"exp":2}""")))
+        assertEquals(unavailable, plenipoMandateDomainOrNull(payload("""{"v":"0.1","id":"x","agent":{},"actions":["a"],"nbf":1.5,"exp":2}""")))
     }
 }
